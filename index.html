@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Love's Daily Space 💕</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>💖 My Daily Space 💖</h1>
+            <p class="subtitle">A special place for my special someone</p>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+
+        <div class="main-content">
+            <!-- Requests Section -->
+            <section class="card requests-section">
+                <h2>✨ My Requests & Wishes</h2>
+                <div class="input-group">
+                    <textarea id="requestInput" placeholder="What's on your mind today? Any special requests or wishes? 💭"></textarea>
+                    <button onclick="addRequest()" class="btn-primary">Add Request</button>
+                </div>
+                <div class="requests-list" id="requestsList"></div>
+            </section>
+
+            <!-- Feelings Section -->
+            <section class="card feelings-section">
+                <h2>🌸 How I'm Feeling Today</h2>
+                <div class="feelings-grid">
+                    <div class="feeling-option" onclick="selectFeeling('happy')">
+                        <span class="emoji">😊</span>
+                        <span>Happy</span>
+                    </div>
+                    <div class="feeling-option" onclick="selectFeeling('love')">
+                        <span class="emoji">🥰</span>
+                        <span>In Love</span>
+                    </div>
+                    <div class="feeling-option" onclick="selectFeeling('excited')">
+                        <span class="emoji">🤩</span>
+                        <span>Excited</span>
+                    </div>
+                    <div class="feeling-option" onclick="selectFeeling('calm')">
+                        <span class="emoji">😌</span>
+                        <span>Calm</span>
+                    </div>
+                    <div class="feeling-option" onclick="selectFeeling('playful')">
+                        <span class="emoji">😘</span>
+                        <span>Playful</span>
+                    </div>
+                    <div class="feeling-option" onclick="selectFeeling('tired')">
+                        <span class="emoji">😴</span>
+                        <span>Tired</span>
+                    </div>
+                </div>
+                <div class="feeling-note">
+                    <textarea id="feelingNote" placeholder="Tell me more about how you're feeling... 💕"></textarea>
+                    <button onclick="saveFeelings()" class="btn-secondary">Save Feelings</button>
+                </div>
+                <div class="current-feeling" id="currentFeeling"></div>
+            </section>
+
+            <!-- Calendar/Availability Section -->
+            <section class="card calendar-section">
+                <h2>📅 My Availability Today</h2>
+                <div class="availability-controls">
+                    <label>
+                        <input type="checkbox" id="morningFree">
+                        🌅 Morning Free (8 AM - 12 PM)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="afternoonFree">
+                        ☀️ Afternoon Free (12 PM - 6 PM)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="eveningFree">
+                        🌙 Evening Free (6 PM - 10 PM)
+                    </label>
+                </div>
+                <div class="schedule-notes">
+                    <textarea id="scheduleNotes" placeholder="Any special plans or notes about your day? 📝"></textarea>
+                    <button onclick="saveAvailability()" class="btn-primary">Save Availability</button>
+                </div>
+            </section>
+
+            <!-- Bucket List Section -->
+            <section class="card bucket-list-section">
+                <h2>🌟 Our Bucket List</h2>
+                <div class="input-group">
+                    <input type="text" id="bucketInput" placeholder="Add something special we want to do together...">
+                    <button onclick="addBucketItem()" class="btn-primary">Add to List</button>
+                </div>
+                <div class="bucket-list" id="bucketList"></div>
+            </section>
+
+            <!-- Cute Images Section -->
+            <section class="card images-section">
+                <h2>🎀 Cute Moments</h2>
+                <div class="image-gallery">
+                    <div class="cute-image">💕</div>
+                    <div class="cute-image">🌸</div>
+                    <div class="cute-image">🦋</div>
+                    <div class="cute-image">🌺</div>
+                    <div class="cute-image">✨</div>
+                    <div class="cute-image">🌙</div>
+                    <div class="cute-image">⭐</div>
+                    <div class="cute-image">🌈</div>
+                </div>
+                <p class="image-message">Each symbol represents a beautiful moment we'll share together 💖</p>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

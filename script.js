@@ -4,13 +4,17 @@ let bucketList = JSON.parse(localStorage.getItem('bucketList')) || [];
 let dailyFeelings = JSON.parse(localStorage.getItem('dailyFeelings')) || {};
 let availability = JSON.parse(localStorage.getItem('availability')) || {};
 
+// Calendar variables
+let currentCalendarDate = new Date();
+let selectedDate = null;
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     updateDate();
     loadRequests();
     loadBucketList();
     loadTodaysFeelings();
-    loadTodaysAvailability();
+    initializeCalendar();
 });
 
 // Update current date display
@@ -154,37 +158,186 @@ function loadTodaysFeelings() {
     }
 }
 
-// Availability functionality
-function saveAvailability() {
-    const morning = document.getElementById('morningFree').checked;
-    const afternoon = document.getElementById('afternoonFree').checked;
-    const evening = document.getElementById('eveningFree').checked;
-    const notes = document.getElementById('scheduleNotes').value.trim();
-
-    const today = new Date().toDateString();
-
-    availability[today] = {
-        morning: morning,
-        afternoon: afternoon,
-        evening: evening,
-        notes: notes,
-        timestamp: new Date().toLocaleString()
-    };
-
-    localStorage.setItem('availability', JSON.stringify(availability));
-    alert('Availability saved! 📅✨');
+// Calendar functionality
+function initializeCalendar() {
+    renderCalendar();
 }
 
-function loadTodaysAvailability() {
-    const today = new Date().toDateString();
-    const todaysAvailability = availability[today];
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const monthDisplay = document.getElementById('currentMonth');
 
-    if (todaysAvailability) {
-        document.getElementById('morningFree').checked = todaysAvailability.morning;
-        document.getElementById('afternoonFree').checked = todaysAvailability.afternoon;
-        document.getElementById('eveningFree').checked = todaysAvailability.evening;
-        document.getElementById('scheduleNotes').value = todaysAvailability.notes || '';
+    // Clear grid
+    grid.innerHTML = '';
+
+    // Set month display
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+    monthDisplay.textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day calendar-day-header';
+        header.textContent = day;
+        grid.appendChild(header);
+    });
+
+    // Get first day of month and number of days
+    const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1);
+    const lastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    // Generate calendar days
+    const today = new Date();
+    for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = currentDate.getDate();
+
+        const dateKey = currentDate.toDateString();
+
+        // Add classes
+        if (currentDate.getMonth() !== currentCalendarDate.getMonth()) {
+            dayElement.classList.add('other-month');
+        }
+
+        if (currentDate.toDateString() === today.toDateString()) {
+            dayElement.classList.add('today');
+        }
+
+        // Check availability status
+        if (availability[dateKey]) {
+            dayElement.classList.add(availability[dateKey].status || 'available');
+        }
+
+        // Add click handler
+        dayElement.addEventListener('click', () => selectDate(currentDate));
+
+        grid.appendChild(dayElement);
     }
+}
+
+function previousMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function selectDate(date) {
+    selectedDate = date;
+
+    // Update visual selection
+    document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+
+    // Show day details
+    const dayDetails = document.getElementById('dayDetails');
+    const selectedDateDisplay = document.getElementById('selectedDate');
+    const dayNotes = document.getElementById('dayNotes');
+
+    const dateKey = date.toDateString();
+    const dayData = availability[dateKey];
+
+    selectedDateDisplay.textContent = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    dayNotes.value = dayData ? (dayData.notes || '') : '';
+
+    // Highlight current status button
+    document.querySelectorAll('.availability-btn').forEach(btn => {
+        btn.style.opacity = '0.6';
+    });
+
+    if (dayData && dayData.status) {
+        const activeBtn = document.querySelector(`.availability-btn.${dayData.status}`);
+        if (activeBtn) {
+            activeBtn.style.opacity = '1';
+        }
+    } else {
+        const clearBtn = document.querySelector('.availability-btn.clear');
+        if (clearBtn) {
+            clearBtn.style.opacity = '1';
+        }
+    }
+
+    dayDetails.style.display = 'block';
+}
+
+function setAvailability(status) {
+    if (!selectedDate) return;
+
+    // Update button states
+    document.querySelectorAll('.availability-btn').forEach(btn => {
+        btn.style.opacity = '0.6';
+    });
+
+    if (status) {
+        const activeBtn = document.querySelector(`.availability-btn.${status}`);
+        if (activeBtn) {
+            activeBtn.style.opacity = '1';
+        }
+    } else {
+        const clearBtn = document.querySelector('.availability-btn.clear');
+        if (clearBtn) {
+            clearBtn.style.opacity = '1';
+        }
+    }
+}
+
+function saveDayInfo() {
+    if (!selectedDate) return;
+
+    const dateKey = selectedDate.toDateString();
+    const notes = document.getElementById('dayNotes').value.trim();
+
+    // Get selected status
+    let selectedStatus = '';
+    document.querySelectorAll('.availability-btn').forEach(btn => {
+        if (btn.style.opacity === '1') {
+            selectedStatus = btn.classList.contains('available') ? 'available' :
+                           btn.classList.contains('busy') ? 'busy' :
+                           btn.classList.contains('maybe') ? 'maybe' : '';
+        }
+    });
+
+    if (selectedStatus || notes) {
+        availability[dateKey] = {
+            status: selectedStatus,
+            notes: notes,
+            timestamp: new Date().toLocaleString()
+        };
+    } else {
+        delete availability[dateKey];
+    }
+
+    localStorage.setItem('availability', JSON.stringify(availability));
+    renderCalendar();
+
+    // Re-select the date to update display
+    setTimeout(() => {
+        const dayElements = document.querySelectorAll('.calendar-day');
+        dayElements.forEach(day => {
+            if (day.textContent == selectedDate.getDate() && !day.classList.contains('other-month')) {
+                day.classList.add('selected');
+            }
+        });
+    }, 100);
 }
 
 // Bucket list functionality
@@ -248,16 +401,6 @@ function deleteBucketItem(id) {
     loadBucketList();
 }
 
-// Add some cute interactions
-document.addEventListener('click', function(e) {
-    // Add sparkle effect to cute images
-    if (e.target.classList.contains('cute-image')) {
-        e.target.style.transform = 'scale(1.2) rotate(10deg)';
-        setTimeout(() => {
-            e.target.style.transform = 'scale(1) rotate(0deg)';
-        }, 200);
-    }
-});
 
 // Add enter key support for inputs
 document.getElementById('requestInput').addEventListener('keypress', function(e) {

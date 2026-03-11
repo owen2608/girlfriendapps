@@ -64,24 +64,39 @@
 
             <!-- Calendar/Availability Section -->
             <section class="card calendar-section">
-                <h2>📅 My Availability Today</h2>
-                <div class="availability-controls">
-                    <label>
-                        <input type="checkbox" id="morningFree">
-                        🌅 Morning Free (8 AM - 12 PM)
-                    </label>
-                    <label>
-                        <input type="checkbox" id="afternoonFree">
-                        ☀️ Afternoon Free (12 PM - 6 PM)
-                    </label>
-                    <label>
-                        <input type="checkbox" id="eveningFree">
-                        🌙 Evening Free (6 PM - 10 PM)
-                    </label>
+                <h2>📅 My Availability Calendar</h2>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button onclick="previousMonth()" class="nav-btn">‹</button>
+                        <h3 id="currentMonth"></h3>
+                        <button onclick="nextMonth()" class="nav-btn">›</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <div class="legend-color available"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color busy"></div>
+                            <span>Busy</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color maybe"></div>
+                            <span>Maybe Available</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="schedule-notes">
-                    <textarea id="scheduleNotes" placeholder="Any special plans or notes about your day? 📝"></textarea>
-                    <button onclick="saveAvailability()" class="btn-primary">Save Availability</button>
+                <div class="day-details" id="dayDetails" style="display: none;">
+                    <h4 id="selectedDate"></h4>
+                    <div class="availability-options">
+                        <button onclick="setAvailability('available')" class="availability-btn available">Available</button>
+                        <button onclick="setAvailability('busy')" class="availability-btn busy">Busy</button>
+                        <button onclick="setAvailability('maybe')" class="availability-btn maybe">Maybe</button>
+                        <button onclick="setAvailability('')" class="availability-btn clear">Clear</button>
+                    </div>
+                    <textarea id="dayNotes" placeholder="Any notes for this day? 📝"></textarea>
+                    <button onclick="saveDayInfo()" class="btn-primary">Save</button>
                 </div>
             </section>
 
@@ -95,21 +110,6 @@
                 <div class="bucket-list" id="bucketList"></div>
             </section>
 
-            <!-- Cute Images Section -->
-            <section class="card images-section">
-                <h2>🎀 Cute Moments</h2>
-                <div class="image-gallery">
-                    <div class="cute-image">💕</div>
-                    <div class="cute-image">🌸</div>
-                    <div class="cute-image">🦋</div>
-                    <div class="cute-image">🌺</div>
-                    <div class="cute-image">✨</div>
-                    <div class="cute-image">🌙</div>
-                    <div class="cute-image">⭐</div>
-                    <div class="cute-image">🌈</div>
-                </div>
-                <p class="image-message">Each symbol represents a beautiful moment we'll share together 💖</p>
-            </section>
         </div>
     </div>
 

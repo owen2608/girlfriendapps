@@ -8,11 +8,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <h1>💖 Welcome to My Daily Space 💖</h1>
+                <p>Please enter the secret password to access this special place</p>
+                <div class="login-form">
+                    <input type="password" id="passwordInput" placeholder="Enter password" required>
+                    <button onclick="authenticate()" class="btn-primary login-btn">Access My Space</button>
+                </div>
+                <div id="loginError" class="login-error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="container" id="mainApp" style="display: none;">
         <header class="header">
             <h1>💖 My Daily Space 💖</h1>
             <p class="subtitle">A special place for my special someone</p>
             <div class="date-display" id="currentDate"></div>
+            <button onclick="logout()" class="logout-btn">Logout</button>
         </header>
 
         <div class="main-content">

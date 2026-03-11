@@ -94,49 +94,16 @@ function initializeDatabase() {
     console.log('Database tables initialized');
 }
 
-// Authentication middleware
-function requireAuth(req, res, next) {
-    if (req.session.authenticated) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Authentication required' });
-    }
-}
+// No authentication required - everyone can access
 
-// AUTHENTICATION ROUTES
-app.post('/api/login', (req, res) => {
-    console.log('Login attempt:', req.body);
-    const { password } = req.body;
-
-    if (password === 'pinky') {
-        req.session.authenticated = true;
-        req.session.userId = 1; // Simple user ID for now
-        console.log('Login successful, session:', req.session);
-        res.json({ success: true, message: 'Login successful' });
-    } else {
-        console.log('Login failed - invalid password');
-        res.status(401).json({ error: 'Invalid password' });
-    }
-});
-
-app.post('/api/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            res.status(500).json({ error: 'Logout failed' });
-        } else {
-            res.json({ success: true, message: 'Logout successful' });
-        }
-    });
-});
-
-app.get('/api/check-auth', (req, res) => {
-    res.json({ authenticated: req.session.authenticated || false });
-});
+// No authentication needed - direct access
 
 // REQUESTS ROUTES
-app.get('/api/requests', requireAuth, (req, res) => {
+const DEFAULT_USER_ID = 1;
+
+app.get('/api/requests', (req, res) => {
     db.all('SELECT * FROM requests WHERE user_id = ? ORDER BY created_at DESC',
-           [req.session.userId], (err, rows) => {
+           [DEFAULT_USER_ID], (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -145,10 +112,10 @@ app.get('/api/requests', requireAuth, (req, res) => {
     });
 });
 
-app.post('/api/requests', requireAuth, (req, res) => {
+app.post('/api/requests', (req, res) => {
     const { text } = req.body;
     db.run('INSERT INTO requests (user_id, text) VALUES (?, ?)',
-           [req.session.userId, text], function(err) {
+           [DEFAULT_USER_ID, text], function(err) {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -157,10 +124,10 @@ app.post('/api/requests', requireAuth, (req, res) => {
     });
 });
 
-app.put('/api/requests/:id', requireAuth, (req, res) => {
+app.put('/api/requests/:id', (req, res) => {
     const { completed } = req.body;
     db.run('UPDATE requests SET completed = ? WHERE id = ? AND user_id = ?',
-           [completed ? 1 : 0, req.params.id, req.session.userId], (err) => {
+           [completed ? 1 : 0, req.params.id, DEFAULT_USER_ID], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -169,9 +136,9 @@ app.put('/api/requests/:id', requireAuth, (req, res) => {
     });
 });
 
-app.delete('/api/requests/:id', requireAuth, (req, res) => {
+app.delete('/api/requests/:id', (req, res) => {
     db.run('DELETE FROM requests WHERE id = ? AND user_id = ?',
-           [req.params.id, req.session.userId], (err) => {
+           [req.params.id, DEFAULT_USER_ID], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -181,9 +148,9 @@ app.delete('/api/requests/:id', requireAuth, (req, res) => {
 });
 
 // FEELINGS ROUTES
-app.get('/api/feelings/:date', requireAuth, (req, res) => {
+app.get('/api/feelings/:date', (req, res) => {
     db.get('SELECT * FROM feelings WHERE user_id = ? AND date = ?',
-           [req.session.userId, req.params.date], (err, row) => {
+           [DEFAULT_USER_ID, req.params.date], (err, row) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -192,11 +159,11 @@ app.get('/api/feelings/:date', requireAuth, (req, res) => {
     });
 });
 
-app.post('/api/feelings', requireAuth, (req, res) => {
+app.post('/api/feelings', (req, res) => {
     const { date, feeling, note } = req.body;
     db.run(`INSERT OR REPLACE INTO feelings (user_id, date, feeling, note)
             VALUES (?, ?, ?, ?)`,
-           [req.session.userId, date, feeling, note], (err) => {
+           [DEFAULT_USER_ID, date, feeling, note], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -206,9 +173,9 @@ app.post('/api/feelings', requireAuth, (req, res) => {
 });
 
 // AVAILABILITY ROUTES
-app.get('/api/availability/:date', requireAuth, (req, res) => {
+app.get('/api/availability/:date', (req, res) => {
     db.get('SELECT * FROM availability WHERE user_id = ? AND date = ?',
-           [req.session.userId, req.params.date], (err, row) => {
+           [DEFAULT_USER_ID, req.params.date], (err, row) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -217,9 +184,9 @@ app.get('/api/availability/:date', requireAuth, (req, res) => {
     });
 });
 
-app.get('/api/availability', requireAuth, (req, res) => {
+app.get('/api/availability', (req, res) => {
     db.all('SELECT * FROM availability WHERE user_id = ?',
-           [req.session.userId], (err, rows) => {
+           [DEFAULT_USER_ID], (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -228,13 +195,13 @@ app.get('/api/availability', requireAuth, (req, res) => {
     });
 });
 
-app.post('/api/availability', requireAuth, (req, res) => {
+app.post('/api/availability', (req, res) => {
     const { date, status, notes } = req.body;
 
     if (!status && !notes) {
         // Delete if both status and notes are empty
         db.run('DELETE FROM availability WHERE user_id = ? AND date = ?',
-               [req.session.userId, date], (err) => {
+               [DEFAULT_USER_ID, date], (err) => {
             if (err) {
                 res.status(500).json({ error: err.message });
             } else {
@@ -244,7 +211,7 @@ app.post('/api/availability', requireAuth, (req, res) => {
     } else {
         db.run(`INSERT OR REPLACE INTO availability (user_id, date, status, notes)
                 VALUES (?, ?, ?, ?)`,
-               [req.session.userId, date, status, notes], (err) => {
+               [DEFAULT_USER_ID, date, status, notes], (err) => {
             if (err) {
                 res.status(500).json({ error: err.message });
             } else {
@@ -255,9 +222,9 @@ app.post('/api/availability', requireAuth, (req, res) => {
 });
 
 // BUCKET LIST ROUTES
-app.get('/api/bucket-list', requireAuth, (req, res) => {
+app.get('/api/bucket-list', (req, res) => {
     db.all('SELECT * FROM bucket_list WHERE user_id = ? ORDER BY created_at DESC',
-           [req.session.userId], (err, rows) => {
+           [DEFAULT_USER_ID], (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -266,10 +233,10 @@ app.get('/api/bucket-list', requireAuth, (req, res) => {
     });
 });
 
-app.post('/api/bucket-list', requireAuth, (req, res) => {
+app.post('/api/bucket-list', (req, res) => {
     const { text } = req.body;
     db.run('INSERT INTO bucket_list (user_id, text) VALUES (?, ?)',
-           [req.session.userId, text], function(err) {
+           [DEFAULT_USER_ID, text], function(err) {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -278,10 +245,10 @@ app.post('/api/bucket-list', requireAuth, (req, res) => {
     });
 });
 
-app.put('/api/bucket-list/:id', requireAuth, (req, res) => {
+app.put('/api/bucket-list/:id', (req, res) => {
     const { completed } = req.body;
     db.run('UPDATE bucket_list SET completed = ? WHERE id = ? AND user_id = ?',
-           [completed ? 1 : 0, req.params.id, req.session.userId], (err) => {
+           [completed ? 1 : 0, req.params.id, DEFAULT_USER_ID], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {
@@ -290,9 +257,9 @@ app.put('/api/bucket-list/:id', requireAuth, (req, res) => {
     });
 });
 
-app.delete('/api/bucket-list/:id', requireAuth, (req, res) => {
+app.delete('/api/bucket-list/:id', (req, res) => {
     db.run('DELETE FROM bucket_list WHERE id = ? AND user_id = ?',
-           [req.params.id, req.session.userId], (err) => {
+           [req.params.id, DEFAULT_USER_ID], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else {

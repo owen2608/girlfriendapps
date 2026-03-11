@@ -10,12 +10,14 @@ let requests = [];
 let bucketList = [];
 let availability = {};
 
-// Initialize the application when DOM is ready (handled below)
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+});
 
 // API Helper Functions
 async function apiCall(endpoint, options = {}) {
     try {
-        console.log('Making API call to:', `${API_BASE}/api${endpoint}`, 'with options:', options);
         const response = await fetch(`${API_BASE}/api${endpoint}`, {
             credentials: 'include',
             headers: {
@@ -25,8 +27,6 @@ async function apiCall(endpoint, options = {}) {
             ...options
         });
 
-        console.log('API response status:', response.status);
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API error response:', errorText);
@@ -34,7 +34,6 @@ async function apiCall(endpoint, options = {}) {
         }
 
         const result = await response.json();
-        console.log('API response data:', result);
         return result;
     } catch (error) {
         console.error('API call failed:', error);
@@ -42,93 +41,11 @@ async function apiCall(endpoint, options = {}) {
     }
 }
 
-// Authentication Functions
-async function checkAuthentication() {
-    console.log('checkAuthentication() called');
-    try {
-        const result = await apiCall('/check-auth');
-        console.log('Auth check result:', result);
-        if (result.authenticated) {
-            console.log('User is authenticated, showing main app');
-            showMainApp();
-        } else {
-            console.log('User is not authenticated, showing login screen');
-            showLoginScreen();
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        console.log('Showing login screen due to error');
-        showLoginScreen();
-    }
-}
-
-function showLoginScreen() {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('mainApp').style.display = 'none';
-
-    // Clear any existing error
-    document.getElementById('loginError').style.display = 'none';
-
-    // Clear the password input
-    const passwordInput = document.getElementById('passwordInput');
-    if (passwordInput) {
-        passwordInput.value = '';
-        passwordInput.focus();
-    }
-}
-
-async function showMainApp() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-
+// Initialize the main application
+async function initializeApp() {
     // Initialize app components
     updateDate();
     await loadAllData();
-}
-
-async function authenticate() {
-    console.log('authenticate() called');
-    const passwordInput = document.getElementById('passwordInput');
-    const password = passwordInput.value.trim();
-    console.log('Password entered:', password);
-
-    if (!password) {
-        showError('Please enter a password');
-        return;
-    }
-
-    try {
-        console.log('Making login API call...');
-        const result = await apiCall('/login', {
-            method: 'POST',
-            body: JSON.stringify({ password })
-        });
-        console.log('Login result:', result);
-
-        showMainApp();
-    } catch (error) {
-        console.error('Login error:', error);
-        showError('Incorrect password. Please try again 💔');
-        passwordInput.value = '';
-    }
-}
-
-function showError(message) {
-    const errorDiv = document.getElementById('loginError');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-}
-
-async function logout() {
-    if (confirm('Are you sure you want to logout? 💕')) {
-        try {
-            await apiCall('/logout', { method: 'POST' });
-            showLoginScreen();
-        } catch (error) {
-            console.error('Logout failed:', error);
-            showLoginScreen(); // Still show login screen even if API call fails
-        }
-    }
 }
 
 // Load all data from API
@@ -602,17 +519,6 @@ async function deleteBucketItem(id) {
 
 // Setup event listeners when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Password input
-    const passwordInput = document.getElementById('passwordInput');
-    if (passwordInput) {
-        passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                authenticate();
-            }
-        });
-    }
-
     // Request input
     const requestInput = document.getElementById('requestInput');
     if (requestInput) {
@@ -634,7 +540,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Initialize authentication check
-    checkAuthentication();
 });

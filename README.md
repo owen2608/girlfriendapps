@@ -4,13 +4,12 @@ A beautiful personal daily space application with authentication, database persi
 
 ## Features
 
-- 🔐 **Password Authentication** (password: "pinky")
 - ✨ **Requests & Wishes** - Add and track personal requests
 - 🌸 **Daily Feelings** - Track emotions with cute emojis
 - 📅 **Availability Calendar** - Visual calendar with color-coded availability
 - 🌟 **Bucket List** - Shared bucket list items
 - 💾 **Database Persistence** - All data saved to SQLite database
-- 👥 **Multi-user Support** - Data separation by user session
+- 🌐 **Direct Access** - No authentication required
 
 ## Tech Stack
 
@@ -79,10 +78,7 @@ Database file: `daily_space.db` (auto-created on first run)
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/login` - Login with password
-- `POST /api/logout` - Logout current session
-- `GET /api/check-auth` - Check authentication status
+### No authentication required - all endpoints are directly accessible
 
 ### Requests
 - `GET /api/requests` - Get all user requests
@@ -115,9 +111,9 @@ No environment variables required for basic setup. The application uses:
 
 ## Security Notes
 
-- Password is hardcoded as "pinky" (change in `server.js` line 47)
-- Session secret should be changed in production
+- No authentication required - direct access to all features
 - Database is file-based SQLite (consider PostgreSQL for production)
+- All data uses a single default user ID for simplicity
 
 ## License
 

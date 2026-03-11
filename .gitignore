@@ -2,6 +2,7 @@ node_modules/
 *.db
 .env
 .env.local
+.env.development.local
 .vercel
 npm-debug.log*
 yarn-debug.log*
